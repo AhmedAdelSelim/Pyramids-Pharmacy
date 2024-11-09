@@ -139,53 +139,5 @@ The frontend will be available at http://localhost:5173
 
 http://localhost:8000/admin
 
-2. Create test data:
 
-# In Django shell (python manage.py shell)
-from medications.models import Medication
-from django.contrib.auth.models import User
 
-# Create test medications
-medications = [
-    {
-        'name': 'Aspirin',
-        'description': 'Pain reliever',
-        'dosage': '325mg',
-        'quantity': 100
-    },
-    {
-        'name': 'Ibuprofen',
-        'description': 'Anti-inflammatory',
-        'dosage': '200mg',
-        'quantity': 50
-    }
-]
-
-for med in medications:
-    Medication.objects.get_or_create(**med)
-
-## Common Issues
-
-1. Database Connection:
-- Ensure PostgreSQL is running
-- Check database credentials in settings.py
-
-2. CORS Issues:
-- Check CORS settings in backend/settings.py
-- Verify API URL in frontend
-
-3. Authentication:
-- Ensure JWT tokens are properly configured
-- Check token expiration settings
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details
