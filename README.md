@@ -4,67 +4,71 @@ A pharmacy management system built with Django REST Framework and React.
 
 ## Prerequisites
 
-- Python 3.8+
-- Node.js 14+
-- PostgreSQL
-- pip (Python package manager)
-- npm (Node package manager)
+- Docker
+- Docker Compose
 
 ## Project Structure
 
 Pyramids-Pharmacy/
 ├── backend/         # Django REST API
+│   ├── Dockerfile
 │   ├── pyproject.toml  # Poetry dependencies
 │   └── poetry.lock
-└── frontend/        # React Application
+├── frontend/        # React Application
+│   └── Dockerfile
+└── docker-compose.yml
 
-## Backend Setup
+## Quick Start
 
-1. Install Poetry (if not already installed):
+1. Clone the repository:
 
-curl -sSL https://install.python-poetry.org | python3 -
+git clone <repository-url>
+cd Pyramids-Pharmacy
 
-2. Navigate to backend directory and install dependencies:
+2. Start the services:
 
-cd backend
-poetry install
+docker-compose up --build
 
-3. Configure PostgreSQL:
+The services will be available at:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8000
+- Admin Panel: http://localhost:8000/admin
 
-# Login to PostgreSQL
-psql -U postgres
+3. Create superuser:
 
-# Create database
-CREATE DATABASE medication_db;
+docker-compose exec backend python manage.py createsuperuser
 
-4. Activate Poetry shell and apply migrations:
+## Development
 
-poetry shell
-python manage.py makemigrations
-python manage.py migrate
+To run migrations:
 
-5. Create superuser:
+docker-compose exec backend python manage.py makemigrations
+docker-compose exec backend python manage.py migrate
 
-python manage.py createsuperuser
+To create test data:
 
-6. Run development server:
+docker-compose exec backend python manage.py shell
 
-python manage.py runserver
+# Then in the Python shell:
+from medications.models import Medication
 
-The backend will be available at http://localhost:8000
+medications = [
+    {
+        'name': 'Aspirin',
+        'description': 'Pain reliever',
+        'dosage': '325mg',
+        'quantity': 100
+    },
+    {
+        'name': 'Ibuprofen',
+        'description': 'Anti-inflammatory',
+        'dosage': '200mg',
+        'quantity': 50
+    }
+]
 
-## Frontend Setup
-
-1. Install dependencies:
-
-cd frontend
-npm install
-
-2. Run development server:
-
-npm run dev
-
-The frontend will be available at http://localhost:5173
+for med in medications:
+    Medication.objects.get_or_create(**med)
 
 ## API Endpoints
 
@@ -126,18 +130,46 @@ The frontend will be available at http://localhost:5173
 - Django REST Framework
 - PostgreSQL
 - JWT Authentication
+- Poetry
+- Docker
 
 ### Frontend
 - React
 - Vite
 - Tailwind CSS
 - Axios
+- Docker
 
-## Development
+## Common Issues
 
-1. Access Django Admin:
+1. Database Connection:
+- Check if PostgreSQL container is running:
+  docker-compose ps
+- Check logs:
+  docker-compose logs db
 
-http://localhost:8000/admin
+2. CORS Issues:
+- Check CORS settings in backend/settings.py
+- Verify API URL in frontend .env file
+
+3. Container Issues:
+- Rebuild containers:
+  docker-compose up --build
+- Check logs:
+  docker-compose logs [service_name]
+
+## Development Commands
+
+### View logs
+docker-compose logs -f [service_name]
+
+### Restart services
+docker-compose restart [service_name]
+
+### Stop all services
+docker-compose down
+
+### Remove volumes
 
 
 
