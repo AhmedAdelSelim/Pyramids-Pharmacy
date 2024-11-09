@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import axiosInstance from '../utils/axios';
+import medicationsService from '../services/medications.service';
+import MedicationCard from '../components/medications/MedicationCard';
 
 export default function Medications() {
   const [medications, setMedications] = useState([]);
@@ -12,47 +13,57 @@ export default function Medications() {
 
   const fetchMedications = async () => {
     try {
-      const response = await axiosInstance.get('/medications/');
-      setMedications(response.data);
-      setLoading(false);
-    } catch (error) {
+      const data = await medicationsService.getAllMedications();
+      setMedications(data);
+    } catch (err) {
       setError('Failed to fetch medications');
+    } finally {
       setLoading(false);
     }
   };
 
-  const requestRefill = async (medicationId) => {
+  const handleRefillRequest = async (medicationId) => {
     try {
-      await axiosInstance.post('/refill-requests/', {
-        medication: medicationId
-      });
+      await medicationsService.requestRefill(medicationId);
       alert('Refill request submitted successfully');
-    } catch (error) {
-      console.error('Error submitting refill request:', error);
+    } catch (err) {
       alert('Failed to submit refill request');
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" />
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-red-600">{error}</div>
+    </div>
+  );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6">Available Medications</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {medications.map((medication) => (
-          <div key={medication.id} className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-semibold mb-2">{medication.name}</h3>
-            <p className="text-gray-600 mb-4">{medication.description}</p>
-            <p className="text-sm text-gray-500 mb-4">Dosage: {medication.dosage}</p>
-            <button
-              onClick={() => requestRefill(medication.id)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-            >
-              Request Refill
-            </button>
-          </div>
-        ))}
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            Available Medications
+          </h2>
+          <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+            View and request refills for your medications
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {medications.map((medication) => (
+            <MedicationCard
+              key={medication.id}
+              medication={medication}
+              onRequestRefill={handleRefillRequest}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

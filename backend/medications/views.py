@@ -6,6 +6,10 @@ from django.db.models import Count
 from .models import Medication, RefillRequest, Notification
 from .serializers import MedicationSerializer, RefillRequestSerializer, UserSerializer
 from django.contrib.auth.models import User
+import logging
+from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -45,21 +49,38 @@ class RefillRequestViewSet(viewsets.ModelViewSet):
         )
         return Response(stats)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
     def create(self, request, *args, **kwargs):
         try:
-            # Add medication_id to request data
-            data = request.data.copy()
-            serializer = self.get_serializer(data=data)
-            
+            # Check if medication_id is provided
+            medication_id = request.data.get('medication')
+            if not medication_id:
+                return Response(
+                    {'error': 'Medication ID is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Check for recent refill requests
+            if RefillRequest.has_recent_request(request.user, medication_id):
+                return Response(
+                    {'error': 'You have already requested a refill for this medication recently'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            serializer = self.get_serializer(data=request.data)
             if serializer.is_valid():
-                self.perform_create(serializer)
+                serializer.save(user=request.user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             return Response(
                 {'error': str(e)}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    @action(detail=False, methods=['GET'])
+    def history(self, request):
+        """Get refill request history for the current user"""
+        refills = self.get_queryset().select_related('medication')
+        serializer = self.get_serializer(refills, many=True)
+        return Response(serializer.data)
