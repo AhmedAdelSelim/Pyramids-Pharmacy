@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 # Wait for database
 echo "Waiting for database..."
