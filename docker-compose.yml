@@ -3,21 +3,31 @@ version: '3.8'
 services:
   db:
     image: postgres:14
+    restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=medication_db
       - POSTGRES_USER=med_user
       - POSTGRES_PASSWORD=med_pass
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U med_user -d medication_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DB_HOST=db
       - DB_NAME=medication_db
@@ -26,7 +36,10 @@ services:
       - DB_PORT=5432
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
     volumes:
       - ./frontend:/app
       - /app/node_modules
