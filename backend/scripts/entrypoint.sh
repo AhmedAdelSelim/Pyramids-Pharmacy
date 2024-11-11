@@ -6,11 +6,12 @@ sleep 5
 
 # Install dependencies using Poetry
 echo "Installing dependencies..."
-poetry install 
+poetry install --no-interaction --no-ansi
 
 # Apply database migrations
 echo "Making migrations..."
 poetry run python manage.py migrate
+
 # Create superuser if not exists
 echo "Creating superuser..."
 poetry run python manage.py shell << END
