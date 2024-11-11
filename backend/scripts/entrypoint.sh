@@ -2,11 +2,7 @@
 
 # Wait for database
 echo "Waiting for database..."
-while ! nc -z db 5432; do
-  sleep 1
-  echo "Waiting for database connection..."
-done
-echo "Database is up!"
+sleep 5
 
 # Install dependencies using Poetry
 echo "Installing dependencies..."
