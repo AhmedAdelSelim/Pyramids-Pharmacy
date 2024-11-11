@@ -2,7 +2,11 @@
 
 # Wait for database
 echo "Waiting for database..."
-sleep 5
+while ! nc -z db 5432; do
+  sleep 1
+  echo "Waiting for database connection..."
+done
+echo "Database is up!"
 
 # Install dependencies using Poetry
 echo "Installing dependencies..."
@@ -10,6 +14,7 @@ poetry install --no-interaction --no-ansi
 
 # Apply database migrations
 echo "Making migrations..."
+poetry run python manage.py makemigrations
 poetry run python manage.py migrate
 
 # Create superuser if not exists

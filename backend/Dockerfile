@@ -5,7 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     POETRY_VERSION=1.8.2 \
     POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_CREATE=false
+    POETRY_VIRTUALENVS_IN_PROJECT=false \
+    POETRY_NO_INTERACTION=1
 
 # Set working directory
 WORKDIR /app
@@ -20,7 +21,8 @@ RUN apt-get update && apt-get install -y \
 # Install Poetry using the official installer
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     cd /usr/local/bin && \
-    ln -s /opt/poetry/bin/poetry
+    ln -s /opt/poetry/bin/poetry && \
+    poetry config virtualenvs.create false
 
 # Copy dependency files
 COPY pyproject.toml poetry.lock ./
